@@ -1,22 +1,43 @@
-# farmcoolcow/autossh
+# ghcr.io/coolcow/autossh
 
-[![](https://img.shields.io/badge/  FROM  -  alpine  -lightgray.svg)](https://hub.docker.com/_/alpine) [![](https://images.microbadger.com/badges/commit/farmcoolcow/autossh.svg)](https://github.com/coolcow/docker_autossh/commits/master) [![](https://images.microbadger.com/badges/image/farmcoolcow/autossh.svg)](https://microbadger.com/images/farmcoolcow/autossh) [![](https://images.microbadger.com/badges/license/farmcoolcow/autossh.svg)](https://raw.githubusercontent.com/coolcow/docker_autossh/master/LICENSE.txt)
-
----
-
-## What is autossh ?
-
-*Automatically restart SSH sessions and tunnels*
-
-autossh is a program to start a copy of ssh and monitor it, restarting it as necessary should it die or stop passing traffic. More informations on [the official autossh website](http://www.harding.motd.ca/autossh/index.html).
+Simple and minimal Alpine-based Docker image for [autossh](https://www.harding.motd.ca/autossh/).
 
 ---
 
-## How to use this image
+## Overview
 
-This image is based on [alpine](https://hub.docker.com/r/_/alpine/).
+autossh starts and monitors an `ssh` process, automatically restarting it if the connection drops.
 
-The default **ENTRYPOINT** is ```/entrypoint.sh``` and the default **CMD** is ```--help```.  
-```/entrypoint.sh``` installs all the files under */install/* to */root/.ssh/*, and executes ```autossh```.
+---
 
-Take a look at [the autossh README](http://www.harding.motd.ca/autossh/README) to see all the available parameters.
+## Usage
+
+### Quick Start
+
+```sh
+docker run --rm ghcr.io/coolcow/autossh
+```
+
+Default runtime behavior:
+
+- **ENTRYPOINT:** `/entrypoint.sh`
+- **CMD:** `--help`
+
+### Provide SSH Config/Keys
+
+The entrypoint installs files from `/install/*` into `/root/.ssh/*` before starting `autossh`.
+
+```sh
+docker run --rm \
+	-v <PATH_TO_SSH_FILES>:/install:ro \
+	ghcr.io/coolcow/autossh \
+		<AUTOSSH_ARGS>
+```
+
+Replace `<PATH_TO_SSH_FILES>` with a directory containing SSH files (for example `config`, `id_rsa`, `known_hosts`).
+
+---
+
+## References
+
+- [autossh Homepage](https://www.harding.motd.ca/autossh/)
