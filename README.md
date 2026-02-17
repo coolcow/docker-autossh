@@ -17,12 +17,13 @@ docker run --rm ghcr.io/coolcow/autossh --help
 ### Provide SSH Config/Keys
 
 Mount a directory with SSH files (for example `config`, `id_rsa`, `known_hosts`) to `/install`.
-Files are copied to `${ENTRYPOINT_HOME}/.ssh` before `autossh` starts.
+Files are copied to `${AUTOSSH_HOME}/.ssh` before `autossh` starts.
 
 ```sh
 docker run --rm \
-	-e PUID=$(id -u) \
-	-e PGID=$(id -g) \
+	-e AUTOSSH_UID=$(id -u) \
+	-e AUTOSSH_GID=$(id -g) \
+	-v /path/to/autossh-home:/home/autossh \
 	-v /path/to/ssh-files:/install:ro \
 	ghcr.io/coolcow/autossh \
 	-M 0 -N user@example.org
@@ -30,13 +31,17 @@ docker run --rm \
 
 ### Runtime Environment Variables
 
-| Variable | Default | Description |
-| --- | --- | --- |
-| `PUID` | `1000` | User ID to run the process as. |
-| `PGID` | `1000` | Group ID to run the process as. |
-| `ENTRYPOINT_USER` | `autossh` | Internal user used by entrypoint scripts. |
-| `ENTRYPOINT_GROUP` | `autossh` | Internal group used by entrypoint scripts. |
-| `ENTRYPOINT_HOME` | `/home` | Working directory and SSH home path inside the container. |
+| Variable | Default | Target | Description |
+| --- | --- | --- | --- |
+| `AUTOSSH_UID` | `1000` | `TARGET_UID` | User ID to run the process as. |
+| `AUTOSSH_GID` | `1000` | `TARGET_GID` | Group ID to run the process as. |
+| `AUTOSSH_REMAP_IDS` | `1` | `TARGET_REMAP_IDS` | Set to `0` to disable remapping conflicting UID/GID entries. |
+| `AUTOSSH_USER` | `autossh` | `TARGET_USER` | Runtime user name inside the container. |
+| `AUTOSSH_GROUP` | `autossh` | `TARGET_GROUP` | Runtime group name inside the container. |
+| `AUTOSSH_HOME` | `/home/autossh` | `TARGET_HOME` | Home directory used by `autossh` and as default workdir. |
+| `AUTOSSH_SHELL` | `/bin/sh` | `TARGET_SHELL` | Login shell for the runtime user. |
+
+`Target` shows the corresponding variable used by `coolcow/entrypoints`.
 
 ---
 
@@ -49,7 +54,21 @@ Customize the image at build time with `docker build --build-arg <KEY>=<VALUE>`.
 | Argument | Default | Description |
 | --- | --- | --- |
 | `ALPINE_VERSION` | `3.23.3` | Version of the Alpine base image. |
-| `ENTRYPOINTS_VERSION` | `2.0.0` | Version of the `coolcow/entrypoints` image used for scripts. |
+| `ENTRYPOINTS_VERSION` | `2.2.0` | Version of the `coolcow/entrypoints` image used for scripts. |
+
+---
+
+## Migration Notes
+
+Runtime user/group environment variables were renamed to image-specific `AUTOSSH_*` names.
+
+- `PUID` → `AUTOSSH_UID`
+- `PGID` → `AUTOSSH_GID`
+- `ENTRYPOINT_USER` → `AUTOSSH_USER`
+- `ENTRYPOINT_GROUP` → `AUTOSSH_GROUP`
+- `ENTRYPOINT_HOME` → `AUTOSSH_HOME`
+
+Update your `docker run` / `docker-compose` environment configuration accordingly when upgrading from older tags.
 
 ---
 

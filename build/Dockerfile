@@ -1,5 +1,5 @@
 # Global build arguments
-ARG ENTRYPOINTS_VERSION=2.0.0
+ARG ENTRYPOINTS_VERSION=2.2.0
 ARG ALPINE_VERSION=3.23.3
 
 # Stage to fetch scripts from the versioned entrypoints asset image
@@ -9,9 +9,13 @@ FROM ghcr.io/coolcow/entrypoints:${ENTRYPOINTS_VERSION} AS entrypoints
 FROM alpine:${ALPINE_VERSION}
 
 # Runtime environment variables
-ENV ENTRYPOINT_USER=autossh \
-    ENTRYPOINT_GROUP=autossh \
-    ENTRYPOINT_HOME=/home
+ENV AUTOSSH_UID=1000 \
+      AUTOSSH_GID=1000 \
+      AUTOSSH_REMAP_IDS=1 \
+      AUTOSSH_USER=autossh \
+      AUTOSSH_GROUP=autossh \
+      AUTOSSH_HOME=/home/autossh \
+      AUTOSSH_SHELL=/bin/sh
 
 # install autossh and required dependencies
 RUN apk --no-cache --update add \
@@ -21,7 +25,7 @@ RUN apk --no-cache --update add \
       su-exec
 
 # Copy required scripts from the entrypoints asset image
-COPY --from=entrypoints /assets/create_user_group_home.sh /usr/local/bin/
+COPY --from=entrypoints /assets/ensure_user_group_home.sh /usr/local/bin/
 COPY --from=entrypoints /assets/entrypoint_su-exec.sh /usr/local/bin/
 
 # Copy image-specific entrypoint
@@ -30,7 +34,7 @@ COPY entrypoint.sh /usr/local/bin/
 # Make scripts executable
 RUN chmod +x /usr/local/bin/*.sh
 
-WORKDIR $ENTRYPOINT_HOME
+WORKDIR $AUTOSSH_HOME
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["--help"]
@@ -56,4 +60,4 @@ LABEL org.opencontainers.image.title=$LABEL_IMAGE_NAME \
       org.opencontainers.image.source=$LABEL_VCS_URL \
       org.opencontainers.image.url=$LABEL_URL
 
-VOLUME $ENTRYPOINT_HOME
+VOLUME $AUTOSSH_HOME

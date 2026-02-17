@@ -2,7 +2,7 @@
 
 # The application image to test is passed as a build argument.
 # The default value is for local testing.
-ARG APP_IMAGE=ghcr.io/coolcow/autossh:latest
+ARG APP_IMAGE=ghcr.io/coolcow/autossh:local-test-build
 FROM ${APP_IMAGE}
 
 # Run smoke tests directly inside the application image.
@@ -12,7 +12,7 @@ RUN \
     test -x /usr/bin/ssh && \
     test -x /usr/local/bin/entrypoint.sh && \
     test -x /usr/local/bin/entrypoint_su-exec.sh && \
-    test -x /usr/local/bin/create_user_group_home.sh && \
+    test -x /usr/local/bin/ensure_user_group_home.sh && \
     echo "Checking autossh version..." && \
     autossh -V && \
     grep -q 'entrypoint_su-exec.sh autossh' /usr/local/bin/entrypoint.sh && \
